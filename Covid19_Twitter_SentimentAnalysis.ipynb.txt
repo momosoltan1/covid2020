@@ -1,0 +1,546 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Covid19_Twitter_SentimentAnalysis.ipynb",
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "accelerator": "GPU"
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "sF2mRiOZa1Ms",
+        "outputId": "9af726ff-7847-4607-d1f4-45fba3ea7377",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 201
+        }
+      },
+      "source": [
+        "# Install Tweepy\n",
+        "!pip install tweepy"
+      ],
+      "execution_count": 21,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Requirement already satisfied: tweepy in /usr/local/lib/python3.6/dist-packages (3.6.0)\n",
+            "Requirement already satisfied: PySocks>=1.5.7 in /usr/local/lib/python3.6/dist-packages (from tweepy) (1.7.1)\n",
+            "Requirement already satisfied: requests>=2.11.1 in /usr/local/lib/python3.6/dist-packages (from tweepy) (2.23.0)\n",
+            "Requirement already satisfied: requests-oauthlib>=0.7.0 in /usr/local/lib/python3.6/dist-packages (from tweepy) (1.3.0)\n",
+            "Requirement already satisfied: six>=1.10.0 in /usr/local/lib/python3.6/dist-packages (from tweepy) (1.15.0)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/dist-packages (from requests>=2.11.1->tweepy) (2020.6.20)\n",
+            "Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/dist-packages (from requests>=2.11.1->tweepy) (2.10)\n",
+            "Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/dist-packages (from requests>=2.11.1->tweepy) (3.0.4)\n",
+            "Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/dist-packages (from requests>=2.11.1->tweepy) (1.24.3)\n",
+            "Requirement already satisfied: oauthlib>=3.0.0 in /usr/local/lib/python3.6/dist-packages (from requests-oauthlib>=0.7.0->tweepy) (3.1.0)\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "MBSMP6OHbDo9"
+      },
+      "source": [
+        "import re\n",
+        "import tweepy\n",
+        "from tweepy import OAuthHandler\n",
+        "consumer_api_key = 'Hblq6lCWsEoHqmY4Svyt6XrXc'\n",
+        "consumer_api_secret = 'omepN6QPYdGIpEFJqnKxoXFX4bso5mpUGEnXwlbcpZfbzYPJDq' \n",
+        "access_token = '1315959050895601665-sVZB4Pqty7pVtPIeagbddAs4UQtbIQ'\n",
+        "access_token_secret ='dmbwgszhAxJdOIEPoEL3qBpQKU0PsYUM5SspL7yJ9WlxU'"
+      ],
+      "execution_count": 20,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "3DXzCMJPbUSe"
+      },
+      "source": [
+        "authorizer = OAuthHandler(consumer_api_key, consumer_api_secret)\n",
+        "authorizer.set_access_token(access_token, access_token_secret)"
+      ],
+      "execution_count": 22,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "PCvHKeQsbfvp"
+      },
+      "source": [
+        "api = tweepy.API(authorizer ,timeout=15)\n",
+        "all_tweets = []\n",
+        "search_query = 'covid'\n",
+        "\n",
+        "for tweet_object in tweepy.Cursor(api.search,q=search_query+\" -filter:retweets\",lang='en',result_type='recent').items(200):\n",
+        "    all_tweets.append(tweet_object.text)"
+      ],
+      "execution_count": 23,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ovmgZsegcr4Z",
+        "outputId": "2e3bc96c-b4b4-4d9d-a627-f3d0202c9e6e",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 55
+        }
+      },
+      "source": [
+        "print(all_tweets)"
+      ],
+      "execution_count": 28,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "['@johnpayne92 @FullFact Remember: The Govt aim to do weekly tests on the entire population (Operation Moonshot).\\n\\nTh… https://t.co/XnhrqW1fM7', '@EnterpriseSBox Happy Birthday Berne! \\n\\nUnder current COVID restrictions we can’t give you a birthday cake so... 😂😂😂 https://t.co/WTltidkdJN', \"Here's Dan Goodspeed's amazing graphic of covid cases vs. political leaning of the states. You can switch it from M… https://t.co/Ct0f4n4mMq\", 'L5 GCSE Computer Scientists have written a COVID-19 symptom checker program in Python,using selection, to advise th… https://t.co/CfZzBxa4XW', 'Prince Charles:  \"#ReimagineReset. Together, I am confident that we can use this crisis to reset our course...\"\\n\\n3/3\\nhttps://t.co/tfhlBa5MXI', 'gym membership = covid', 'Not having to take a taxi since the first day of Covid-19 is a luxury I just figured out I have.', 'CNN reporter to Trump supporter: What if Trump asked you to put on a mask?\\nhttps://t.co/ZCVetLLt1P', '@eliza20200 @babushkakov @thefalconette 1) Early on I was suspect, esp after the 1st 2 weeks. My first thought on l… https://t.co/Ikjjf7LQGO', '@GordonCashwell Another article: https://t.co/vnNSPAhS4S', 'Thank you for your help suppressing the spread of COVID-19.\\n#Adur &amp; #Worthing are within the “medium” risk level in… https://t.co/fBkjBPes7S', 'Sir, I urgently need ur help. My one of the relative is very serious. His lever and kidney slows down functioning.… https://t.co/iLAZlTRlJk', 'Its been a week since my mom was diagnosed with COVID-19 i don’t know how im not sick but i appreciate everyone who… https://t.co/kI1hMFlfbk', '@scientificrealm @realDonaldTrump Always!    And with every day is is more obvious.   We would have had low Covid-19 numbers under Obama.', \"Clare Richards @ftwork_org, sponsors of #NLAwards20 Community Prize on @BBCRadioLondon 'because of Covid we've begu… https://t.co/ld9Q0RXmjI\", '@ACTBrigitte 65 milllion.  How many Americans have died from COVID-19 under Trump’s leadership?', 'Find out more about the local COVID alert levels, and access the postcode checker to show local level. LAs have als… https://t.co/3dwSoNCdub', '@donmoyn Senator Mitch McConnell LAUGHS at being called out on not passing in May 2020 a COVID-19 bill.', '\"Coronavirus shutdowns and charges of white supremacy: American art museums are in crisis\" https://t.co/uR2MARrQTP', 'Covid?', '@markbspiegel \"In an accepted manuscript that appears on the Oxford University Press (OUP) website, researchers rep… https://t.co/Bs9CRq8x6c', '@allllllllllllly “We’re going to flip the script” on COVID. Jesus. Who are these morons?', 'COVID-19 testing to be intensified in the upcoming season of festivities, winter - https://t.co/PptjHnsNcC https://t.co/AICtNQ8c00', '@chickacquired \"Normal\" has been forever altered. We now have some history we\\'d never had, prior to Covid Mania. as… https://t.co/vLCjXyPJfv', '@KishaniAlanki Aligned with other countries, SL is also moving ahead with \"live with covid\" motto, but this is beco… https://t.co/nmPRf9KQEA', 'Experimental COVID-19 treatment given to Trump found to relieve symptoms in macaques and hamsters… https://t.co/m77DnRpWys', 'Johnson &amp; Johnson Covid-19 vaccine study paused due to unexplained illness in participant - \\nhttps://t.co/Y9RFcAbbla', \"@EspenMarkiGrime @JessicaTrilli2 @realDonaldTrump That's Fake News, in UK average death age is 82 n 'long covid' in… https://t.co/8vzJXzrLbr\", 'Fun fact: The chances of you meeting a covid+ person are higher than you meeting your soulmate. 😂', 'I was suspicious from the first day. Now I am sure he had a bad cold, not COVID. https://t.co/lUkXWYSTQ3', '@RealPressSecBot Omg, 3 of every 500 Americans who have died of COVID-19 lived in Bexar County, Texas.', 'Meaning basically that no one has died of Covid 19 \\U0001f971\\U0001f971😡\\n\\nArtificially ramping up fear.\\n\\nAsk yourself why ?', '@WorldBank WBG-COVID-19 Lending of historic record to already Debt-distressed Poorest countries is sinking latter n… https://t.co/BdoIOCiesl', '@Solitarnesque @ErdingtonTories @jonwalker121 @ewan_mackey @outercircles @KingsHeathLTN @ZhorMalik1 @DESJADDOO… https://t.co/egKEdVsQHg', 'Lots of talk around clinical uncertainty and Covid at the moment -  @tmdfac @cj_pope @LucasSeuren and I revisited a… https://t.co/Tt1FttvZJh', 'Hundreds of thousands came to Ireland from Covid hotspots in just four weeks https://t.co/nUefxKtpqn', '@IhaVictors @ForumCivHubESA @KwachaAfrika @BobsonFadhili @Hivvo2 @WillieOeba @Georgy_Ngugi Why do common citizens a… https://t.co/IqisqX54Ed', '@itselijahcooper I think you have to isolate: https://t.co/qwkjzCuUIt', '@IanHardie9018 Afternoon Ian.\\nSunny but bit brass like down here.\\nDay one of this self-isolation crap.\\nFinger cross… https://t.co/5SkuvmY4Oy', '@realDonaldTrump And how mamy Americans have caught Covid-19 under Trumps leadership', 'When you were actually supposed to be fighting covid you were fucking playing golf in some resort, now mentah2 posi… https://t.co/rrKrGkPQfL', 'This was months ago ye sex offenders register signing deviant. No spike after any of this. Also why the picture wit… https://t.co/UbXAo6DcyJ', \"@realDonaldTrump I like president's who don't lie and don't spread covid in the midst of a pandemic.  I think the r… https://t.co/ZnAE2pL6B9\", 'How long before, due to overwhelming costs incurred from covid, we’ll be told we all have to “chip in” for any trea… https://t.co/C3CNFz2Q2c', '@NelsonMiller25 @wendy2786 @IngrahamAngle Under Governor Cuomo the number of COVID deaths/day in NY has been reduce… https://t.co/o7yfgj8IsC', '@NickTriggle @devisridhar @VirusesImmunity Sounds like they got COVID and Flu', '@moodyflufnstuf @ACTBrigitte Not from Covid.', '@NBCNews You won’t know all the names, but be clear, COVID-19 is still killing people across the world. Some will s… https://t.co/CO3bZV9Ogc', '@SkinnydipLondon your customer service is awful. Weeks between reply. Now being questioned about receipt proof of p… https://t.co/8l69iyUPOe', 'Petition: Prevent gyms closing due to a spike in Covid 19 cases https://t.co/DQn94WmwL4', 'Sport sector leaders to speak at virtual event on Covid-19 impact https://t.co/X4TabXTuMu via @AllForActivity', 'He wasn’t hospitalized for covid. He was hospitalized for something else. Nothing else can explain it', 'How long can I expect a COVID-19 illness to last? https://t.co/gSdxS2gEQE', \"@DevTrivedi0523 We play Newcastle on Saturday this week. Cavani can't at due to covid guidelines.\", 'When this pandemic started the we were told masks are next to useless. I heard at least on scientists say the Covid… https://t.co/FgRg0NKMM8', 'Yo the president is terrible , how can you say you would kiss everyone , niggaaa never had COVID !', '@SamHeughan  Just noticed your Tweet about needed support for Theater in the UK.  Hoping you received this article… https://t.co/GeDshbKRBL', \"Garmin teams up with Children's Mercy Kansas City to keep children active during COVID-19 https://t.co/qsOV6Vcwn1 https://t.co/YskOF3XTkJ\", 'Watch this video. I am now not sure Trump ever had COVID at all. https://t.co/519YEsRFCb', \"@UncleCrepitus @alextomo Again i think you're missing the point the partial lockdowns are working we are kerping co… https://t.co/pmhhaY0tDN\", 'Tennessee mayor Lonnie Norman has died of COVID-19 after being hospitalized  https://t.co/GL3SwIUZZn', 'Federal Government Announces New Rent Relief Measures To Replace CECRA https://t.co/bQMai046A6 By @ClarkWilsonLLP', 'COVID Cases since June by state partisanship https://t.co/gpvSylL1w9', 'Live  Coronavirus daily news updates  September 8  What to know today about COVID 19 in the S… https://t.co/3HIZrkk3xO', 'If you see me coughing its not Covid ne its change of seasons flue', 'Trump relishes return to large rallies following COVID-19 diagnosis https://t.co/pwqDsSP1Fy', 'President Trump has finally tested Negative of Covid-19....\\n\\nWe move on.. 4+4', 'In which the DG of the WHO explains that herd immunity is actually about protection via vaccination, not virus expo… https://t.co/q3aqQMS7X6', \"@h_dub @Banksey74 @restall73 @piersmorgan And how much more can we take away from the younger generation they've lo… https://t.co/jIU0fsxy16\", \"USA 🇺🇸 50'000 COVID cases per day Population 331'553'000 \\nIncidence 0.00015\\nSwitzerland 🇨🇭1500 cases per day\\nPopula… https://t.co/tPalnLtyc8\", '@kylegriffin1 Thanks to Italy/Spain, the US had ample warning COVID was coming. The US leads the world in R&amp;D scien… https://t.co/0V10vKCtXg', \"Via @euronews: Herd immunity 'not an option' warns WHO as cases continue to spike https://t.co/AyDZBfmQcO\", '@FortuneMagazine Oh we back at this again ?  Surfaces ?  Yeah GTFO. Covid fear porn. Always.', \"@tehseowner If the almost 16,000 dead Floridians who've perished from covid-19 had a vote I'm certain they would be of a different opinion.\", \"@ariaclast If I want to maximise the ballet-flap,I'll say this govt have routinely overlooked these industries, esp… https://t.co/BumJ6iSpHD\", '@based_belgium More than just the covid plague', 'Why we shouldn’t rush vaccines. \\n\\nhttps://t.co/D0p1E4Xp1a', 'After temporarily closing their doors in line with the new Government guidance around COVID-19, @powerleagueUK were… https://t.co/qDTLZDoHAC', \"'Uninhabitable hell': Climate change and disease threaten millions, UN warns https://t.co/t2BIssKc8X\", \"@LFCVik2 Doesn't mane hv covid?\", 'You won’t know all the names, but be clear, COVID-19 is still killing people across the world. Some will survive, b… https://t.co/gL0MWQ5TeA', \"Trump: I'm immune!\\nCovid-19: Hold my beer.\\nBBC News - Covid reinfection: Man gets Covid twice and second hit 'more… https://t.co/Yna7mmOJTd\", '“ Data indicates that infants born to Covid-19-positive mothers do well in the first six to eight weeks after birth… https://t.co/HPTB90ynFF', '@nkostelic Shaved my hair off twice since covid started. So not professionally done :D', '@cspanwj Meanwhile the minority red states are getting the majority of Covid-19 cases: https://t.co/kpqFWU5IDh', '@musicgirl4life @realDonaldTrump The best experience of your life is watching a narcissistic child spew covid all o… https://t.co/p6SuVNaDth', \"@effidiots @rmolot @Cat111566 @ACTBrigitte So let's get this straight.... They under reported h1 deaths, but over r… https://t.co/9bjzGAVdRl\", '@grahamstuart Great we have the defib because this area is going to need them for the Clinically extremely vulnerab… https://t.co/VnELv4Mv4X', '@realDonaldTrump You understand that just because Wall Street numbers got up that isn’t a sign of a good evonlmy! W… https://t.co/A8rWmn6Sz3', 'Trump ad about him recovering from COVID-19 is a joke. Everyone in the ad is wearing a mask including the President… https://t.co/QwyF8fikFj', '@reynolds_steven @EricofOC @KSLawWolf @ChrisKingFL Right.  New York was hit before anywhere else and early on New Y… https://t.co/m8G0kD0qAz', 'COVID-19: Govt evacuates 5,98,434 stranded J&amp;K residents; 4,58,142 via Lakhanpur, 1,40,292 through special trains… https://t.co/0FYnBMIHrP', \"This asshole had GOT to go. Think it's funny that we lead the world in covid deaths? https://t.co/lx8Ile1wyP\", 'Grim new analyses spotlight just how hard US is failing in pandemic https://t.co/fh6TOnVZse', '@RyannMcEnany @realDonaldTrump Your Orange Clown! Covid Donny!', 'When you got lost in the woods about covid 19 figures and graphs, this is a must read with a wealth of references. https://t.co/Xa3a7x03UU', '@nytimes Well he said he wanted to kiss them, so trouble for sure. What don’t people understand about the virus, it… https://t.co/FHUQBIcB7I', '@realDonaldTrump We are entitled to know when your last negative test was. We deserve to know why you took an emerg… https://t.co/3MmZ7zFHQM', 'Exposure to covid. Not sustained contact or anything, but still. HOW MUCH DO I FREAK OUT?', 'Johnson &amp; Johnson Halts COVID-19 Vaccine Trial After Mystery Illness https://t.co/KT16AVULej', '@Yourleader77 @nugsCO @_denverhannah_ @cliffjs @gantzoulatos @RexChapman Here ya go lazy- stop lying, or acting lik… https://t.co/corhex6IBg', '@CathyNotToday @AngrierWHStaff 👍Yes, Covid, do your thing.', \"England's pubs ponder if pasties or chips make a meal amid COVID lockdown https://t.co/npCSPK6J30 https://t.co/u0Ajqxhx0D #tech\", '@MaireadCarlin COVID is such a bitch.', 'Note from the VC\\n“The next group of students is poised to return to the University. As we welcome these students, w… https://t.co/yWrO4XTdY2', '@Acosta American is \"winning, winning, winning\". Do you think he meant \"DYING, DYING, DYING\" of the economic crisis and COVID-19?', '@Hadel A vaccine will make little difference anytime soon. People need to distribute millions &amp; millions of dose an… https://t.co/9R0FuiuBvM', '@trviahype @honeymooonavnue Gaga raised millions for Covid and BLM don’t worry', '@ahawk01 @EndTheOligarch @KamVTV Ok so by her own words, if \"we knew\" Covid was airborne in January shouldn\\'t Joe h… https://t.co/WB5tB9iojk', 'History will remember covid as the plague that saved democracy. Rest assured, @realDonaldTrump would be securing a… https://t.co/T95tImOOBz', 'Power app for staff shows all the areas of the airport that have been cleaned and when.  All areas from airside to… https://t.co/13wxmiDDxt', '@indymeansindy @claifolk @NikkiStix55 Again getting covid is NOT a guaranteed death sentence! Most people even many… https://t.co/K5ultTaWoH', '@save_atul @BJP4Maharashtra @CMOMaharashtra @OfficeofUT Sir maharashtra is affected by Covid worstly.  Please consi… https://t.co/Bz0m87aKPP', 'Help slow the spread of #COVID19 and identify at risk cases sooner by self-reporting your symptoms daily, even if y… https://t.co/rp0xaq43H0', '@Homeoffree61 I am recovering from Covid 19. Prior to that I had none but now I do. #ThanksTrump', 'China warned that this had happened to them months ago! There is no Herd Immunity with Covid!!!\\nCoronavirus: US man… https://t.co/52hB0tV65i', '@NewstalkFM @LunchtimeLiveNT Took covid for M.E. to be taken seriously.', 'An informative session on exploring new dimensions of cybersecurity in a post-COVID world. \\nWatch this space for mo… https://t.co/wWygGpouo0', '#Tuesday News: “Stop CO2 emissions bouncing back after Covid”; Trump Campaign “Harassing” Fauci; “Despite rising Co… https://t.co/oMGe73HLPt', '@AmyMcGrathKY As I said I truly believe they think Covid 19 all those we lost and struggling is a laughing matter.', 'Boris faces attacks from all sides after splitting the UK into 3 risk levels https://t.co/lRb0ceBQnf', '@EricTrump @GavinNewsom This is a seriously pathetic attempt to discourage people from voting. People won’t want to… https://t.co/DlkxTLZ77Q', 'Senator Harris if your so concerned about the covid 19 out break why aren’t you using some of your millions to help… https://t.co/XwBPjaCPSI', '‼️ STAY TUNED ‼️\\n\\nTomorrow, we will launch the book “PANDEMIC OF HUNGER: Asserting People’s Rights Amid COVID-19.\"… https://t.co/p4PwAhRyxP', \"If you're interested in learning a new skill during the Covid-19 Crisis, why not choose Sign Language?… https://t.co/cZcZ1LgTqh\", 'A useful guide to whats its like to attend a testing centre for Covid. https://t.co/IiYAXYRvJy', \"@celestialweasel @dsquareddigest @yorksranter @MattTempest As of early August they'd spent 1 billion on Test &amp; Trac… https://t.co/T98UlTwWZL\", 'Is anyone still struggling with all of this COVID craziness? Or is everyone feeling fine about it all?', 'Finding a new place in this Covid world sharing tips, insights and useful resources for the first time leader - let… https://t.co/qdswBh6aKm', 'So far we have received 4,496 mobility requests through our #CovidMobility request form, with protected cycling lan… https://t.co/8B8KBTYzA8', \"@DanRather Not to blame it on Covid, but this is part of the issue.\\n\\nIn NH, we'll be able to walk in and out with no delays.\", '@nostradanie @QuestionPDX @toddeherman @BriannaWu This something else could be the reaction to covid, the lockdowns… https://t.co/HTTLL7brx1', \"@villdoc @Twiterislame2 @real_defender @realDonaldTrump Says the person that literally said 2% when that's not true… https://t.co/q8xRFkovVP\", '@rweingarten @SenatorLeahy Blame Nancy for that one and let’s not forget, blame China for COVID!', '@cjohnsonspider2 I agree 100 percent. None of those idiots have covid. It’s a ploy and a distraction. Evil!', '@berlinairport do we need a covid test before we fly from Scotland to come to Berlin.', '#VonkMedia \\nCOVID-19 getalle vir 13 Oktober\\nhttps://t.co/N5jRBu6fPy https://t.co/xnSRunsi2s', \"@Gooner_Phil Got my negative result today so I'm groovy. No covid!\", '@SkyNews people kicking up such a fuss and going through everything they can to make it out as if covid isnt real j… https://t.co/KBINrSjsh4', 'India sees 100,000 COVID-19 deaths: What happened and what now? https://t.co/WvmnAOSFLB via @AJEnglish', '.@JNJNews Halts #COVID19 #Vaccine Trial Due to Unexplained Illness #compliance #AstraZeneca https://t.co/Rb7rGigxRx https://t.co/uHp4TOS9Ea', \"Judge rules DC COVID restrictions 'substantially burden' religious freedom https://t.co/FNgVSIYgQP via @cnalive\", '@lolathepug1 @DougalMcStanley @FaultFinderUK @JamesMelville It just says they die in similar places, which is t sur… https://t.co/XnKXoqNTQr', 'Highest number of Covid-19 recoveries since pandemic began https://t.co/pZerIOD6jo', 'US Reports 41529 New COVID Cases, 315 Deaths In Last 24 Hours https://t.co/9scXuFPN1O #news #breaking #rttnews https://t.co/RA0hmXX6Ax', 'ICYMI, yesterday’s post about data management for Covid with a shout out to @dpatil https://t.co/6DwMhHyC7o', 'Four Corners Health Department COVID-19 Updates https://t.co/HOytjCyUOH', 'Republicans who rely most on Donald Trump and the coronavirus task force for news about COVID-19 see the outbreak d… https://t.co/ynMiynj1EV', 'HP’s CEO on how the pandemic is accelerating change in technology and business https://t.co/Xgi7BatG42', 'Doctors Worry That Alcohol Dependency On The Rise Due To COVID https://t.co/azEelAN0iM', '@SnapperSurgeon @Your_Levodopa The question is whether she needs to be applauded for this?  I believe that she has… https://t.co/Ab4TZJgw9h', '\"Active #COVID cases show declining trend; continuous decline in average daily new cases for last 5 weeks\": Rajesh… https://t.co/MJKWlBqgWt', \"@MDCPS @MiamiSup Why don't you talk about the positive Covid cases in the schools?\", '@Outofthewoodsi1 @myknittingwool @maybe_caroline @last_jones @RandaltsRandal @noplaceforsheep @Basilwazil @norfer40… https://t.co/qT7HMg24hx', 'New Global Survey Raises Red Flags for Journalism in the COVID-19\\xa0Era https://t.co/EjnLXswFhy', 'Trump’s COVID-19 diagnosis: What lies ahead could include a constitutional crisis over succession https://t.co/59ZPcpBujC', \"#Covid19 #UKGOV ignore 4 out of 5 of Sage's advised lockdown actions - https://t.co/XJ1CPMFQkA\", 'Problems with PCR testing for COVID -19 https://t.co/21bKKnUCo8 via @YouTube', '@mmpadellan COVID will do that to you.', 'How do the people who advocated the strictest and earliest lockdowns square that with their anger at the unemployme… https://t.co/w7NIsyNxp3', '@NC_Governor\\n‘We in the World Health Organization do not advocate lockdowns as the primary means of control of this… https://t.co/9O8tpSYNQm', '@MarshaBlackburn McConnell refused to sit any federal judges for six years under Obama under Trump McConnell has be… https://t.co/cq8P8VlZvY', '@michelle_crypto The film is set in 1990. There was no covid back then 🤣.', 'I FUCKING MISS GOING OUT &amp; ANYWHERE. I FUCKING MISS IT. FUCK IT COVID.', 'Covid helps animals...fact! https://t.co/RPW88rdrig', \"@oberon_le That's lucky. With Covid being around this year we needed a good flu year in 2020 👍\", 'Mitigate the spread. Wear a mask 😷  https://t.co/y1KuL9Gvgz', '@chicagotribune The 13 states with the most COVID cases per capita ALL voted red in the 2016 election. The bottom 5… https://t.co/9eCoH9yjXH', \"@brianwhelanhack @AyoCaesar We won't even try. In that respect, Covid is climate change in miniature – the people i… https://t.co/dzxz5PQ5AH\", 'Top 10 tips on how-to-increase-employee-engagement-trust, and belonging during covid-19 remote-work.… https://t.co/T54pwzYAvl', '@MissNikkiNY Ya boy on Twitter comparing H1N1 numbers to Covid... Trump..', 'Due to the affection all of you, the report of COVID 19 has come back negative and I will soon return to my work.\\n\\nBest Regards \\nDr.Narendra', 'Are we right to blame students for the rise in Covid-19?  Partly, but not entirely.  Sensible analysis from… https://t.co/Aq0WzrW4cF', '@JennyChachan Next phase, they seize your property. \\n\\nHe already said the City should seize property for Covid resp… https://t.co/VRRvo049MI', 'We would also like to give a special commendation to Lucy Fletcher @UniofOxford for her key role in managing the gr… https://t.co/OsweXHIBqg', 'It seems to me, that this \"COVID\" is a new \"hybrid war\" method. And the Jewish WHO and the world sionistic \"club\" c… https://t.co/4pSCQZykEZ', '@MichaelYeadon3 4/4 The paper:\\n\\nTracking Changes in SARS-CoV-2 Spike: Evidence that D614G Increases Infectivity of… https://t.co/qEqOSieMF7', \"@dangoodspeed's chart here is astonishing. Watch it to the bitter end...https://t.co/oWhXAEOtAG\", 'ONS figures deaths COVID-19 is 58 517 \\nWe beat US per capita\\nWorst in the world ! \\nSecond wave will be catastrophic… https://t.co/NkawpjCcKH', 'Labour MPs urge Starmer to get tough with government on Covid https://t.co/hUCbngKnLN', 'Yeah, We’re number 1! Fl is number 1 in covid cases! I reopened early and ignored the science! We’re number 1, we’r… https://t.co/XBZ1kATXfl', 'Days left to claim £6,750 Covid cash or miss out foreverhttps://www.gloucestershirelive.co.uk/news/uk-world-news/da… https://t.co/DiZhE61Mlc', 'Pledge Taken Against Spread Of covid 19 #RailParivar #UniteToFightCorona #SCRAILWAY https://t.co/ptp7SFkqHk', '@JohnRus99074876 @iandaisyfox @piersmorgan My Mum works at Pinderfields hospital, she said the covid wards there ar… https://t.co/3KOGURv8i5', 'The Chaska-Chanhassen varsity football game, scheduled for Friday, Oct. 16, has been canceled due to a COVID-19-rel… https://t.co/SdHFP5FLy4', '@ConspiracyCen @IbrahimKhwaja @Grammierbs @RyanAFournier @realDonaldTrump Stop lying. Current death rate from conta… https://t.co/jqBC9Y1UwD', '“ Seamless and efficient flow of goods and increase in Intra EAC Trade depends on all stakeholders coordinating, co… https://t.co/Jau9HsKJwu', '@JoJoFromJerz It would be interesting to know how many votes trump lost out of the 200k plus people that died of Co… https://t.co/ew5aNUqkbM', \"If you have lost your job due to the effects of COVID-19, we'd like to offer you 10% off ticket prices to The Globa… https://t.co/oPd0Wi92WX\", 'Amy Coney Barrett hearings continue as Trump heads to Pennsylvania rally – US politics live https://t.co/cNOzBKm9Fj #travel #news', 'Good morning Wellington Catholic peeps! We’re looking forward to reconnecting with you today, in class and on line,… https://t.co/KCYkfC1KH0', '@realTuckFrumper #Covid_19 is coming to get #COVIDIDIOT tRumpoopy twice💥‼️', 'Deaths due to the novel coronavirus in the US is expected to reach almost 400,000 by February 1, 2021, according to… https://t.co/r3q1E8PfnJ', \"Covid reinfection: Man gets Covid twice and second hit 'more severe'\\nhttps://t.co/N53A74c4xV\", '@ImAVeteranBot @RonaldLabudda @MartiniBond007 @ACTBrigitte Obama declared a public health emergency 10 days after t… https://t.co/y8HboAkdzi', '@InezShooter My partner is an ICU sister and they have 4 Covid patients in an 80 bed ICU . This is also in the NW', 'A vaccine in trials has caused unexplained illness.\\n\\n\"Johnson &amp; Johnson pauses COVID-19 vaccine trial over patient… https://t.co/f1N9Bu85an', 'Our nurse @nangekhesimiyu, who stepped up during Covid-19 pandemic ‘honoured’ to be named a Rising Star this Black… https://t.co/JBn5qXHZ8w', 'Self safety slogan drive to defeat Covid 19 launched by SSP, SBS Nagar - a step to promote Mission Fateh. https://t.co/ckb47Jofp4', \"What I'm reading: https://t.co/h9vwOuHUEQ]\"]\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "03M6gOZzc7rb",
+        "outputId": "8967a2c2-e6f2-4625-82ec-bf4e2de9dd74",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 54
+        }
+      },
+      "source": [
+        "import numpy as np \n",
+        "import pandas as pd \n",
+        "import re  \n",
+        "import nltk # an amazing library to play with natural language\n",
+        "nltk.download('stopwords')  \n",
+        "from nltk.corpus import stopwords \n"
+      ],
+      "execution_count": 29,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "[nltk_data] Downloading package stopwords to /root/nltk_data...\n",
+            "[nltk_data]   Package stopwords is already up-to-date!\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "LIIrJYhVdD9y",
+        "outputId": "b78712da-d341-4362-c151-b7b506f61dfd",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 274
+        }
+      },
+      "source": [
+        "tweets = pd.read_csv(\"https://raw.githubusercontent.com/kolaveridi/kaggle-Twitter-US-Airline-Sentiment-/master/Tweets.csv\")\n",
+        "print(tweets)"
+      ],
+      "execution_count": 30,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "                 tweet_id  ...               user_timezone\n",
+            "0      570306133677760513  ...  Eastern Time (US & Canada)\n",
+            "1      570301130888122368  ...  Pacific Time (US & Canada)\n",
+            "2      570301083672813571  ...  Central Time (US & Canada)\n",
+            "3      570301031407624196  ...  Pacific Time (US & Canada)\n",
+            "4      570300817074462722  ...  Pacific Time (US & Canada)\n",
+            "...                   ...  ...                         ...\n",
+            "14635  569587686496825344  ...                         NaN\n",
+            "14636  569587371693355008  ...                         NaN\n",
+            "14637  569587242672398336  ...                         NaN\n",
+            "14638  569587188687634433  ...  Eastern Time (US & Canada)\n",
+            "14639  569587140490866689  ...                         NaN\n",
+            "\n",
+            "[14640 rows x 15 columns]\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "yUFttnmRdTol",
+        "outputId": "e6a8e3d2-654a-4c73-e19a-3355c96482b1",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 127
+        }
+      },
+      "source": [
+        "X = tweets.iloc[:, 10].values  \n",
+        "y = tweets.iloc[:, 1].values\n",
+        "\n",
+        "print(X)"
+      ],
+      "execution_count": 31,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "['@VirginAmerica What @dhepburn said.'\n",
+            " \"@VirginAmerica plus you've added commercials to the experience... tacky.\"\n",
+            " \"@VirginAmerica I didn't today... Must mean I need to take another trip!\"\n",
+            " ... '@AmericanAir Please bring American Airlines to #BlackBerry10'\n",
+            " \"@AmericanAir you have my money, you change my flight, and don't answer your phones! Any other suggestions so I can make my commitment??\"\n",
+            " '@AmericanAir we have 8 ppl so we need 2 know how many seats are on the next flight. Plz put us on standby for 4 people on the next flight?']\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "wCbe6x3cqOAR"
+      },
+      "source": [
+        "processed_tweets = []\n",
+        " \n",
+        "for tweet in range(0, len(X)):  \n",
+        "    # Remove all the special characters\n",
+        "    processed_tweet = re.sub(r'\\W', ' ', str(X[tweet]))\n",
+        " \n",
+        "    # remove all single characters\n",
+        "    processed_tweet = re.sub(r'\\s+[a-zA-Z]\\s+', ' ', processed_tweet)\n",
+        " \n",
+        "    # Remove single characters from the start\n",
+        "    processed_tweet = re.sub(r'\\^[a-zA-Z]\\s+', ' ', processed_tweet) \n",
+        " \n",
+        "    # Substituting multiple spaces with single space\n",
+        "    processed_tweet= re.sub(r'\\s+', ' ', processed_tweet, flags=re.I)\n",
+        " \n",
+        "    # Removing prefixed 'b'\n",
+        "    processed_tweet = re.sub(r'^b\\s+', '', processed_tweet)\n",
+        " \n",
+        "    # Converting to Lowercase\n",
+        "    processed_tweet = processed_tweet.lower()\n",
+        " \n",
+        "    processed_tweets.append(processed_tweet)"
+      ],
+      "execution_count": 32,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "fvvzPXC7daw9"
+      },
+      "source": [
+        "from sklearn.feature_extraction.text import TfidfVectorizer  \n",
+        "tfidfconverter = TfidfVectorizer(max_features=2000, min_df=5, max_df=0.7, stop_words=stopwords.words('english'))  \n",
+        "X = tfidfconverter.fit_transform(processed_tweets).toarray()\n"
+      ],
+      "execution_count": 33,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "_yReZpg4dftB",
+        "outputId": "8029ac78-a413-4cbe-b2a2-b8ee01933346",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 164
+        }
+      },
+      "source": [
+        "from sklearn.ensemble import RandomForestClassifier\n",
+        "text_classifier = RandomForestClassifier(n_estimators=100, random_state=0)  \n",
+        "text_classifier.fit(X, y)"
+      ],
+      "execution_count": 34,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "RandomForestClassifier(bootstrap=True, ccp_alpha=0.0, class_weight=None,\n",
+              "                       criterion='gini', max_depth=None, max_features='auto',\n",
+              "                       max_leaf_nodes=None, max_samples=None,\n",
+              "                       min_impurity_decrease=0.0, min_impurity_split=None,\n",
+              "                       min_samples_leaf=1, min_samples_split=2,\n",
+              "                       min_weight_fraction_leaf=0.0, n_estimators=100,\n",
+              "                       n_jobs=None, oob_score=False, random_state=0, verbose=0,\n",
+              "                       warm_start=False)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 34
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "PiH3lhymdsYI",
+        "outputId": "4362d045-910c-4fa4-fdc9-41c6d118fd44",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 1000
+        }
+      },
+      "source": [
+        "for tweet in all_tweets:\n",
+        "    # Remove all the special characters\n",
+        "    processed_tweet = re.sub(r'\\W', ' ', tweet)\n",
+        " \n",
+        "    # remove all single characters\n",
+        "    processed_tweet = re.sub(r'\\s+[a-zA-Z]\\s+', ' ', processed_tweet)\n",
+        " \n",
+        "    # Remove single characters from the start\n",
+        "    processed_tweet = re.sub(r'\\^[a-zA-Z]\\s+', ' ', processed_tweet) \n",
+        " \n",
+        "    # Substituting multiple spaces with single space\n",
+        "    processed_tweet= re.sub(r'\\s+', ' ', processed_tweet, flags=re.I)\n",
+        " \n",
+        "    # Removing prefixed 'b'\n",
+        "    processed_tweet = re.sub(r'^b\\s+', '', processed_tweet)\n",
+        " \n",
+        "    # Converting to Lowercase\n",
+        "    processed_tweet = processed_tweet.lower()\n",
+        " \n",
+        "    sentiment = text_classifier.predict(tfidfconverter.transform([ processed_tweet]).toarray())\n",
+        "    print(processed_tweet ,\":\", sentiment)\n"
+      ],
+      "execution_count": 35,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            " johnpayne92 fullfact remember the govt aim to do weekly tests on the entire population operation moonshot th https co xnhrqw1fm7 : ['neutral']\n",
+            " enterprisesbox happy birthday berne under current covid restrictions we can give you birthday cake so https co wtltidkdjn : ['negative']\n",
+            "here dan goodspeed amazing graphic of covid cases vs political leaning of the states you can switch it from https co ct0f4n4mmq : ['positive']\n",
+            "l5 gcse computer scientists have written covid 19 symptom checker program in python using selection to advise th https co cfzzbxa4xw : ['neutral']\n",
+            "prince charles reimaginereset together am confident that we can use this crisis to reset our course 3 3 https co tfhlba5mxi : ['neutral']\n",
+            "gym membership covid : ['negative']\n",
+            "not having to take taxi since the first day of covid 19 is luxury just figured out have  : ['negative']\n",
+            "cnn reporter to trump supporter what if trump asked you to put on mask https co zcvetllt1p : ['neutral']\n",
+            " eliza20200 babushkakov thefalconette 1 early on was suspect esp after the 1st 2 weeks my first thought on https co ikjjf7lqgo : ['neutral']\n",
+            " gordoncashwell another article https co vnnspahs4s : ['neutral']\n",
+            "thank you for your help suppressing the spread of covid 19 adur amp worthing are within the medium risk level in https co fbkjbpes7s : ['positive']\n",
+            "sir urgently need ur help my one of the relative is very serious his lever and kidney slows down functioning https co ilazltrljk : ['negative']\n",
+            "its been week since my mom was diagnosed with covid 19 don know how im not sick but appreciate everyone who https co ki1hmflfbk : ['negative']\n",
+            " scientificrealm realdonaldtrump always and with every day is is more obvious we would have had low covid 19 numbers under obama  : ['negative']\n",
+            "clare richards ftwork_org sponsors of nlawards20 community prize on bbcradiolondon because of covid we ve begu https co ld9q0rxmji : ['neutral']\n",
+            " actbrigitte 65 milllion how many americans have died from covid 19 under trump leadership  : ['negative']\n",
+            "find out more about the local covid alert levels and access the postcode checker to show local level las have als https co 3dwsoncdub : ['negative']\n",
+            " donmoyn senator mitch mcconnell laughs at being called out on not passing in may 2020 covid 19 bill  : ['negative']\n",
+            " coronavirus shutdowns and charges of white supremacy american art museums are in crisis https co ur2marrqtp : ['neutral']\n",
+            "covid  : ['negative']\n",
+            " markbspiegel in an accepted manuscript that appears on the oxford university press oup website researchers rep https co bs9crq8x6c : ['negative']\n",
+            " allllllllllllly we re going to flip the script on covid jesus who are these morons  : ['negative']\n",
+            "covid 19 testing to be intensified in the upcoming season of festivities winter https co pptjhnsncc https co aictnq8c00 : ['neutral']\n",
+            " chickacquired normal has been forever altered we now have some history we never had prior to covid mania as https co vlcjxypjfv : ['negative']\n",
+            " kishanialanki aligned with other countries sl is also moving ahead with live with covid motto but this is beco https co nmprf9kqea : ['neutral']\n",
+            "experimental covid 19 treatment given to trump found to relieve symptoms in macaques and hamsters https co m77dnrpwys : ['neutral']\n",
+            "johnson amp johnson covid 19 vaccine study paused due to unexplained illness in participant https co y9rfcabbla : ['neutral']\n",
+            " espenmarkigrime jessicatrilli2 realdonaldtrump that fake news in uk average death age is 82 long covid in https co 8vzjxzrlbr : ['neutral']\n",
+            "fun fact the chances of you meeting covid person are higher than you meeting your soulmate  : ['negative']\n",
+            "i was suspicious from the first day now am sure he had bad cold not covid https co lukxwystq3 : ['neutral']\n",
+            " realpresssecbot omg 3 of every 500 americans who have died of covid 19 lived in bexar county texas  : ['negative']\n",
+            "meaning basically that no one has died of covid 19 artificially ramping up fear ask yourself why  : ['negative']\n",
+            " worldbank wbg covid 19 lending of historic record to already debt distressed poorest countries is sinking latter https co bdoiociesl : ['neutral']\n",
+            " solitarnesque erdingtontories jonwalker121 ewan_mackey outercircles kingsheathltn zhormalik1 desjaddoo https co egkedvsqhg : ['neutral']\n",
+            "lots of talk around clinical uncertainty and covid at the moment tmdfac cj_pope lucasseuren and revisited https co tt1fttvzjh : ['neutral']\n",
+            "hundreds of thousands came to ireland from covid hotspots in just four weeks https co nuefxktpqn : ['neutral']\n",
+            " ihavictors forumcivhubesa kwachaafrika bobsonfadhili hivvo2 willieoeba georgy_ngugi why do common citizens https co iqisqx54ed : ['neutral']\n",
+            " itselijahcooper think you have to isolate https co qwkjzcuuit : ['neutral']\n",
+            " ianhardie9018 afternoon ian sunny but bit brass like down here day one of this self isolation crap finger cross https co 5skuvmy4oy : ['negative']\n",
+            " realdonaldtrump and how mamy americans have caught covid 19 under trumps leadership : ['negative']\n",
+            "when you were actually supposed to be fighting covid you were fucking playing golf in some resort now mentah2 posi https co rrkrgkpqfl : ['negative']\n",
+            "this was months ago ye sex offenders register signing deviant no spike after any of this also why the picture wit https co ubxao6dcyj : ['neutral']\n",
+            " realdonaldtrump like president who don lie and don spread covid in the midst of pandemic think the https co znae2pl6b9 : ['neutral']\n",
+            "how long before due to overwhelming costs incurred from covid we ll be told we all have to chip in for any trea https co c3cnfz2q2c : ['negative']\n",
+            " nelsonmiller25 wendy2786 ingrahamangle under governor cuomo the number of covid deaths day in ny has been reduce https co o7yfgj8isc : ['neutral']\n",
+            " nicktriggle devisridhar virusesimmunity sounds like they got covid and flu : ['negative']\n",
+            " moodyflufnstuf actbrigitte not from covid  : ['negative']\n",
+            " nbcnews you won know all the names but be clear covid 19 is still killing people across the world some will https co co3bzv9ogc : ['negative']\n",
+            " skinnydiplondon your customer service is awful weeks between reply now being questioned about receipt proof of https co 8l69iyupoe : ['negative']\n",
+            "petition prevent gyms closing due to spike in covid 19 cases https co dqn94wmwl4 : ['neutral']\n",
+            "sport sector leaders to speak at virtual event on covid 19 impact https co x4tabxtumu via allforactivity : ['neutral']\n",
+            "he wasn hospitalized for covid he was hospitalized for something else nothing else can explain it : ['negative']\n",
+            "how long can expect covid 19 illness to last https co gsdxs2geqe : ['neutral']\n",
+            " devtrivedi0523 we play newcastle on saturday this week cavani can at due to covid guidelines  : ['negative']\n",
+            "when this pandemic started the we were told masks are next to useless heard at least on scientists say the covid https co fgrg0nkmm8 : ['negative']\n",
+            "yo the president is terrible how can you say you would kiss everyone niggaaa never had covid  : ['negative']\n",
+            " samheughan just noticed your tweet about needed support for theater in the uk hoping you received this article https co gedshbkrbl : ['negative']\n",
+            "garmin teams up with children mercy kansas city to keep children active during covid 19 https co qsov6vcwn1 https co yskof3xtkj : ['neutral']\n",
+            "watch this video am now not sure trump ever had covid at all https co 519yesrfcb : ['neutral']\n",
+            " unclecrepitus alextomo again think you re missing the point the partial lockdowns are working we are kerping co https co pmhhay0tdn : ['neutral']\n",
+            "tennessee mayor lonnie norman has died of covid 19 after being hospitalized https co gl3swiuzzn : ['neutral']\n",
+            "federal government announces new rent relief measures to replace cecra https co bqmai046a6 by clarkwilsonllp : ['neutral']\n",
+            "covid cases since june by state partisanship https co gpvsyll1w9 : ['neutral']\n",
+            "live coronavirus daily news updates september 8 what to know today about covid 19 in the https co 3hizrkk3xo : ['neutral']\n",
+            "if you see me coughing its not covid ne its change of seasons flue : ['neutral']\n",
+            "trump relishes return to large rallies following covid 19 diagnosis https co pwqdssp1fy : ['neutral']\n",
+            "president trump has finally tested negative of covid 19 we move on 4 4 : ['negative']\n",
+            "in which the dg of the who explains that herd immunity is actually about protection via vaccination not virus expo https co q3aqqms7x6 : ['neutral']\n",
+            " h_dub banksey74 restall73 piersmorgan and how much more can we take away from the younger generation they ve lo https co jiu0fsxy16 : ['neutral']\n",
+            "usa 50 000 covid cases per day population 331 553 000 incidence 0 00015 switzerland 1500 cases per day popula https co tpalnltyc8 : ['negative']\n",
+            " kylegriffin1 thanks to italy spain the us had ample warning covid was coming the us leads the world in amp scien https co 0v10vkctxg : ['positive']\n",
+            "via euronews herd immunity not an option warns who as cases continue to spike https co aydzbfmqco : ['neutral']\n",
+            " fortunemagazine oh we back at this again surfaces yeah gtfo covid fear porn always  : ['positive']\n",
+            " tehseowner if the almost 16 000 dead floridians who ve perished from covid 19 had vote m certain they would be of different opinion  : ['negative']\n",
+            " ariaclast if want to maximise the ballet flap ll say this govt have routinely overlooked these industries esp https co bumj6isphd : ['neutral']\n",
+            " based_belgium more than just the covid plague : ['negative']\n",
+            "why we shouldn rush vaccines https co d0p1e4xp1a : ['neutral']\n",
+            "after temporarily closing their doors in line with the new government guidance around covid 19 powerleagueuk were https co qdtlzdohac : ['neutral']\n",
+            " uninhabitable hell climate change and disease threaten millions un warns https co t2bisskc8x : ['neutral']\n",
+            " lfcvik2 doesn mane hv covid  : ['negative']\n",
+            "you won know all the names but be clear covid 19 is still killing people across the world some will survive https co gl0mwq5tea : ['negative']\n",
+            "trump m immune covid 19 hold my beer bbc news covid reinfection man gets covid twice and second hit more https co yna7mmojtd : ['negative']\n",
+            " data indicates that infants born to covid 19 positive mothers do well in the first six to eight weeks after birth https co hptb90ynff : ['negative']\n",
+            " nkostelic shaved my hair off twice since covid started so not professionally done d : ['negative']\n",
+            " cspanwj meanwhile the minority red states are getting the majority of covid 19 cases https co kpqfwu5idh : ['neutral']\n",
+            " musicgirl4life realdonaldtrump the best experience of your life is watching narcissistic child spew covid all https co p6suvnadth : ['positive']\n",
+            " effidiots rmolot cat111566 actbrigitte so let get this straight they under reported h1 deaths but over https co 9bjzgavdrl : ['neutral']\n",
+            " grahamstuart great we have the defib because this area is going to need them for the clinically extremely vulnerab https co vnelv4mv4x : ['positive']\n",
+            " realdonaldtrump you understand that just because wall street numbers got up that isn a sign of good evonlmy https co a8rwmn6sz3 : ['neutral']\n",
+            "trump ad about him recovering from covid 19 is joke everyone in the ad is wearing mask including the president https co qwyf8fikfj : ['neutral']\n",
+            " reynolds_steven ericofoc kslawwolf chriskingfl right new york was hit before anywhere else and early on new https co m8g0kd0qaz : ['neutral']\n",
+            "covid 19 govt evacuates 5 98 434 stranded amp residents 4 58 142 via lakhanpur 1 40 292 through special trains https co 0fynbmihrp : ['neutral']\n",
+            "this asshole had got to go think it funny that we lead the world in covid deaths https co lx8ile1wyp : ['neutral']\n",
+            "grim new analyses spotlight just how hard us is failing in pandemic https co fh6tonvzse : ['neutral']\n",
+            " ryannmcenany realdonaldtrump your orange clown covid donny  : ['negative']\n",
+            "when you got lost in the woods about covid 19 figures and graphs this is must read with wealth of references https co xa3a7x03uu : ['negative']\n",
+            " nytimes well he said he wanted to kiss them so trouble for sure what don people understand about the virus it https co fhuqbicb7i : ['negative']\n",
+            " realdonaldtrump we are entitled to know when your last negative test was we deserve to know why you took an emerg https co 3mmz7zfhqm : ['neutral']\n",
+            "exposure to covid not sustained contact or anything but still how much do freak out  : ['negative']\n",
+            "johnson amp johnson halts covid 19 vaccine trial after mystery illness https co kt16avulej : ['neutral']\n",
+            " yourleader77 nugsco _denverhannah_ cliffjs gantzoulatos rexchapman here ya go lazy stop lying or acting lik https co corhex6ibg : ['neutral']\n",
+            " cathynottoday angrierwhstaff yes covid do your thing  : ['negative']\n",
+            "england pubs ponder if pasties or chips make meal amid covid lockdown https co npcspk6j30 https co u0ajqxhx0d tech : ['neutral']\n",
+            " maireadcarlin covid is such bitch  : ['negative']\n",
+            "note from the vc the next group of students is poised to return to the university as we welcome these students https co ywro4xtdy2 : ['neutral']\n",
+            " acosta american is winning winning winning do you think he meant dying dying dying of the economic crisis and covid 19  : ['negative']\n",
+            " hadel vaccine will make little difference anytime soon people need to distribute millions amp millions of dose an https co 9r0fuiubvm : ['negative']\n",
+            " trviahype honeymooonavnue gaga raised millions for covid and blm don worry : ['negative']\n",
+            " ahawk01 endtheoligarch kamvtv ok so by her own words if we knew covid was airborne in january shouldn joe https co wb5tb9iojk : ['neutral']\n",
+            "history will remember covid as the plague that saved democracy rest assured realdonaldtrump would be securing https co t95timoobz : ['neutral']\n",
+            "power app for staff shows all the areas of the airport that have been cleaned and when all areas from airside to https co 13wxmiddxt : ['negative']\n",
+            " indymeansindy claifolk nikkistix55 again getting covid is not guaranteed death sentence most people even many https co k5ulttawoh : ['negative']\n",
+            " save_atul bjp4maharashtra cmomaharashtra officeofut sir maharashtra is affected by covid worstly please consi https co bz0m87akpp : ['neutral']\n",
+            "help slow the spread of covid19 and identify at risk cases sooner by self reporting your symptoms daily even if https co rp0xaq43h0 : ['negative']\n",
+            " homeoffree61 am recovering from covid 19 prior to that had none but now do thankstrump : ['negative']\n",
+            "china warned that this had happened to them months ago there is no herd immunity with covid coronavirus us man https co 52hb0tv65i : ['neutral']\n",
+            " newstalkfm lunchtimelivent took covid for e to be taken seriously  : ['negative']\n",
+            "an informative session on exploring new dimensions of cybersecurity in post covid world watch this space for mo https co wwyggpouo0 : ['neutral']\n",
+            " tuesday news stop co2 emissions bouncing back after covid trump campaign harassing fauci despite rising co https co omge73hlpt : ['neutral']\n",
+            " amymcgrathky as said truly believe they think covid 19 all those we lost and struggling is laughing matter  : ['negative']\n",
+            "boris faces attacks from all sides after splitting the uk into 3 risk levels https co lrb0cebqnf : ['neutral']\n",
+            " erictrump gavinnewsom this is seriously pathetic attempt to discourage people from voting people won want to https co dlkxtlz77q : ['negative']\n",
+            "senator harris if your so concerned about the covid 19 out break why aren you using some of your millions to help https co xwbpjacpsi : ['neutral']\n",
+            " stay tuned tomorrow we will launch the book pandemic of hunger asserting people rights amid covid 19 https co p4pwahryxp : ['neutral']\n",
+            "if you re interested in learning new skill during the covid 19 crisis why not choose sign language https co czcz1lgtqh : ['neutral']\n",
+            "a useful guide to whats its like to attend testing centre for covid https co iiyaxyrvjy : ['neutral']\n",
+            " celestialweasel dsquareddigest yorksranter matttempest as of early august they spent 1 billion on test amp trac https co t98ultwwzl : ['neutral']\n",
+            "is anyone still struggling with all of this covid craziness or is everyone feeling fine about it all  : ['negative']\n",
+            "finding new place in this covid world sharing tips insights and useful resources for the first time leader let https co qdswbh6akm : ['negative']\n",
+            "so far we have received 4 496 mobility requests through our covidmobility request form with protected cycling lan https co 8b8kbtyza8 : ['neutral']\n",
+            " danrather not to blame it on covid but this is part of the issue in nh we ll be able to walk in and out with no delays  : ['negative']\n",
+            " nostradanie questionpdx toddeherman briannawu this something else could be the reaction to covid the lockdowns https co httll7brx1 : ['neutral']\n",
+            " villdoc twiterislame2 real_defender realdonaldtrump says the person that literally said 2 when that not true https co q8xrfkovvp : ['neutral']\n",
+            " rweingarten senatorleahy blame nancy for that one and let not forget blame china for covid  : ['negative']\n",
+            " cjohnsonspider2 agree 100 percent none of those idiots have covid it a ploy and distraction evil  : ['negative']\n",
+            " berlinairport do we need covid test before we fly from scotland to come to berlin  : ['negative']\n",
+            " vonkmedia covid 19 getalle vir 13 oktober https co n5jrbu6fpy https co xnsrunsi2s : ['neutral']\n",
+            " gooner_phil got my negative result today so m groovy no covid  : ['negative']\n",
+            " skynews people kicking up such fuss and going through everything they can to make it out as if covid isnt real https co kbinrsjsh4 : ['negative']\n",
+            "india sees 100 000 covid 19 deaths what happened and what now https co wvmnaosflb via ajenglish : ['neutral']\n",
+            " jnjnews halts covid19 vaccine trial due to unexplained illness compliance astrazeneca https co rb7rgigxrx https co uhp4tos9ea : ['neutral']\n",
+            "judge rules dc covid restrictions substantially burden religious freedom https co fngvsiygqp via cnalive : ['neutral']\n",
+            " lolathepug1 dougalmcstanley faultfinderuk jamesmelville it just says they die in similar places which is sur https co xnkxoqntqr : ['neutral']\n",
+            "highest number of covid 19 recoveries since pandemic began https co pzeriod6jo : ['neutral']\n",
+            "us reports 41529 new covid cases 315 deaths in last 24 hours https co 9scxufpn1o news breaking rttnews https co ra0hmxx6ax : ['negative']\n",
+            "icymi yesterday post about data management for covid with shout out to dpatil https co 6dwmhhyc7o : ['neutral']\n",
+            "four corners health department covid 19 updates https co hoytjcyuoh : ['neutral']\n",
+            "republicans who rely most on donald trump and the coronavirus task force for news about covid 19 see the outbreak https co ynmiynj1ev : ['neutral']\n",
+            "hp ceo on how the pandemic is accelerating change in technology and business https co xgi7batg42 : ['neutral']\n",
+            "doctors worry that alcohol dependency on the rise due to covid https co azeelan0im : ['neutral']\n",
+            " snappersurgeon your_levodopa the question is whether she needs to be applauded for this believe that she has https co ab4tzjgw9h : ['neutral']\n",
+            " active covid cases show declining trend continuous decline in average daily new cases for last 5 weeks rajesh https co mjkwlbqgwt : ['neutral']\n",
+            " mdcps miamisup why don you talk about the positive covid cases in the schools  : ['negative']\n",
+            " outofthewoodsi1 myknittingwool maybe_caroline last_jones randaltsrandal noplaceforsheep basilwazil norfer40 https co qt7hmg24hx : ['neutral']\n",
+            "new global survey raises red flags for journalism in the covid 19 era https co ejnlxswfhy : ['neutral']\n",
+            "trump covid 19 diagnosis what lies ahead could include constitutional crisis over succession https co 59zpcpbujc : ['neutral']\n",
+            " covid19 ukgov ignore 4 out of 5 of sage advised lockdown actions https co xj1cpmfqka : ['neutral']\n",
+            "problems with pcr testing for covid 19 https co 21bkknuco8 via youtube : ['neutral']\n",
+            " mmpadellan covid will do that to you  : ['negative']\n",
+            "how do the people who advocated the strictest and earliest lockdowns square that with their anger at the unemployme https co w7nisynxp3 : ['neutral']\n",
+            " nc_governor we in the world health organization do not advocate lockdowns as the primary means of control of this https co 9o8tpsynqm : ['neutral']\n",
+            " marshablackburn mcconnell refused to sit any federal judges for six years under obama under trump mcconnell has be https co cq8p8vlzvy : ['neutral']\n",
+            " michelle_crypto the film is set in 1990 there was no covid back then  : ['negative']\n",
+            "i fucking miss going out amp anywhere fucking miss it fuck it covid  : ['negative']\n",
+            "covid helps animals fact https co rpw88rdrig : ['neutral']\n",
+            " oberon_le that lucky with covid being around this year we needed good flu year in 2020  : ['negative']\n",
+            "mitigate the spread wear mask https co y1kul9gvgz : ['neutral']\n",
+            " chicagotribune the 13 states with the most covid cases per capita all voted red in the 2016 election the bottom 5 https co 9ecoh9yjxh : ['neutral']\n",
+            " brianwhelanhack ayocaesar we won even try in that respect covid is climate change in miniature the people https co dzxz5pq5ah : ['negative']\n",
+            "top 10 tips on how to increase employee engagement trust and belonging during covid 19 remote work https co t54pwzyavl : ['negative']\n",
+            " missnikkiny ya boy on twitter comparing h1n1 numbers to covid trump  : ['negative']\n",
+            "due to the affection all of you the report of covid 19 has come back negative and will soon return to my work best regards dr narendra : ['negative']\n",
+            "are we right to blame students for the rise in covid 19 partly but not entirely sensible analysis from https co aq0wzrw4cf : ['neutral']\n",
+            " jennychachan next phase they seize your property he already said the city should seize property for covid resp https co vrrvo049mi : ['neutral']\n",
+            "we would also like to give special commendation to lucy fletcher uniofoxford for her key role in managing the gr https co oswexhibqg : ['neutral']\n",
+            "it seems to me that this covid is new hybrid war method and the jewish who and the world sionistic club https co 4pscqzykez : ['neutral']\n",
+            " michaelyeadon3 4 4 the paper tracking changes in sars cov 2 spike evidence that d614g increases infectivity of https co qeqosiemf7 : ['neutral']\n",
+            " dangoodspeed chart here is astonishing watch it to the bitter end https co owhxaeotag : ['neutral']\n",
+            "ons figures deaths covid 19 is 58 517 we beat us per capita worst in the world second wave will be catastrophic https co nkawpjcckh : ['negative']\n",
+            "labour mps urge starmer to get tough with government on covid https co hucbngknln : ['neutral']\n",
+            "yeah we re number 1 fl is number 1 in covid cases reopened early and ignored the science we re number 1 we https co xbz1katxfl : ['neutral']\n",
+            "days left to claim 6 750 covid cash or miss out foreverhttps www gloucestershirelive co uk news uk world news da https co dizhe61mlc : ['neutral']\n",
+            "pledge taken against spread of covid 19 railparivar unitetofightcorona scrailway https co ptp7sfkqhk : ['neutral']\n",
+            " johnrus99074876 iandaisyfox piersmorgan my mum works at pinderfields hospital she said the covid wards there ar https co 3kogurv8i5 : ['neutral']\n",
+            "the chaska chanhassen varsity football game scheduled for friday oct 16 has been canceled due to covid 19 rel https co sdhfp5fly4 : ['negative']\n",
+            " conspiracycen ibrahimkhwaja grammierbs ryanafournier realdonaldtrump stop lying current death rate from conta https co jqbc9y1uwd : ['neutral']\n",
+            " seamless and efficient flow of goods and increase in intra eac trade depends on all stakeholders coordinating co https co jau9hskjwu : ['neutral']\n",
+            " jojofromjerz it would be interesting to know how many votes trump lost out of the 200k plus people that died of co https co ew5anuqkbm : ['negative']\n",
+            "if you have lost your job due to the effects of covid 19 we like to offer you 10 off ticket prices to the globa https co opd0wi92wx : ['negative']\n",
+            "amy coney barrett hearings continue as trump heads to pennsylvania rally us politics live https co cnozbkm9fj travel news : ['negative']\n",
+            "good morning wellington catholic peeps we re looking forward to reconnecting with you today in class and on line https co kcykfc1kh0 : ['neutral']\n",
+            " realtuckfrumper covid_19 is coming to get covididiot trumpoopy twice  : ['negative']\n",
+            "deaths due to the novel coronavirus in the us is expected to reach almost 400 000 by february 1 2021 according to https co r3q1e8pfnj : ['negative']\n",
+            "covid reinfection man gets covid twice and second hit more severe https co n53a74c4xv : ['neutral']\n",
+            " imaveteranbot ronaldlabudda martinibond007 actbrigitte obama declared public health emergency 10 days after https co y8hboakdzi : ['neutral']\n",
+            " inezshooter my partner is an icu sister and they have 4 covid patients in an 80 bed icu this is also in the nw : ['negative']\n",
+            "a vaccine in trials has caused unexplained illness johnson amp johnson pauses covid 19 vaccine trial over patient https co f1n9bu85an : ['neutral']\n",
+            "our nurse nangekhesimiyu who stepped up during covid 19 pandemic honoured to be named rising star this black https co jbn5qxhz8w : ['neutral']\n",
+            "self safety slogan drive to defeat covid 19 launched by ssp sbs nagar step to promote mission fateh https co ckb47jofp4 : ['negative']\n",
+            "what m reading https co h9vwouhueq  : ['neutral']\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    }
+  ]
+}
